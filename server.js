@@ -13,12 +13,24 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const projectsFile = "projects.json";
 const upload = multer({ dest: path.join(__dirname, "uploads") });
 
-app.get("/api/messages", (req, res) => {
+app.post("/api/messages", (req, res) => {
+  const { name, email, message } = req.body;
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: "Semua field wajib diisi." });
+  }
   let messages = [];
   if (fs.existsSync("messages.json")) {
     messages = JSON.parse(fs.readFileSync("messages.json"));
   }
-  res.json(messages);
+  const newMessage = {
+    name,
+    email,
+    message,
+    date: new Date().toISOString()
+  };
+  messages.push(newMessage);
+  fs.writeFileSync("messages.json", JSON.stringify(messages, null, 2));
+  res.json({ success: true });
 });
 
 app.get("/api/messages", (req, res) => {
